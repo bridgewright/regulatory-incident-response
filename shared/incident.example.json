@@ -1,0 +1,83 @@
+{
+  "incident_id": "INC-20251008-01",
+  "title": "해외주식(미국) 주문체결 지연 — 외부 브로커(DriveWealth) 연계 장애",
+  "detection": {
+    "first_recognizer": "고객(민원인)",
+    "detection_channel": "고객 민원 인입 + APM 체결응답 지연 알람",
+    "detected_at": "2025-10-08T22:40:00+09:00"
+  },
+  "timeline": {
+    "occurred_at": "2025-10-08T22:32:00+09:00",
+    "resolved_at": "2025-10-08T23:35:00+09:00",
+    "events": [
+      { "at": "2025-10-08T22:32:00+09:00", "action": "미국 정규장 개장 직후 해외주식 주문 체결 지연 시작" },
+      { "at": "2025-10-08T22:40:00+09:00", "action": "APM 알람 + 고객 민원으로 장애 인지, 상황실 소집" },
+      { "at": "2025-10-08T22:55:00+09:00", "action": "원인이 외부 브로커 DriveWealth 측 장애로 확인, 1차 고객 공지 게시" },
+      { "at": "2025-10-08T23:35:00+09:00", "action": "DriveWealth 복구, 체결 정상화 확인" }
+    ]
+  },
+  "classification": {
+    "incident_category": "전산장애사고",
+    "failure_subtype": "외부요인으로 인한 장애",
+    "failure_detail": "미국 현지 브로커(DriveWealth) 전산장애로 주문 라우팅·체결 지연"
+  },
+  "impact": {
+    "affected_services": ["해외주식 매수/매도 주문", "해외주식 체결"],
+    "affected_markets": ["해외주식"],
+    "single_branch_only": false,
+    "public_webserver_only": false,
+    "disruption_minutes": 63,
+    "affected_users_count": 21000,
+    "incident_amount_krw": null
+  },
+  "cause": {
+    "root_cause": "미국 현지 위탁 브로커 DriveWealth의 주문처리 시스템 장애로 당사 주문 전달·체결이 지연됨 (당사 내부 시스템 정상)",
+    "external_factor": true,
+    "responsible_company": "DriveWealth",
+    "affected_other_firms": "동일 브로커 연계 국내 증권사 다수 동시 영향"
+  },
+  "system_name": "해외주식 주문체결 시스템(MTS-해외)",
+  "description": "2025-10-08 미국 정규장 개장 직후부터 약 63분간 해외주식 매수/매도 주문이 체결되지 않거나 지연됨. 일부 고객이 원하는 시점에 매매하지 못함.",
+  "handling": "외부 브로커 복구 확인 후 체결 정상화. 피해 민원 접수 채널 안내 및 보상기준 게시.",
+  "measures": "외부 브로커 이중화(복수 브로커 라우팅) 검토, 외부 연계 장애 자동탐지·전환 모니터링 강화.",
+  "victims": [],
+  "compensation": {},
+  "orders": [
+    {
+      "claim_id": "CLM-001",
+      "customer_id": "C-88123",
+      "order_time": "2025-10-08T22:34:00+09:00",
+      "side": "매수",
+      "ticker": "TSLA",
+      "quantity": 3,
+      "unmet_price": 420.00,
+      "recovered_price": 430.00,
+      "currency": "USD",
+      "fx_rate": 1350,
+      "claim_received_at": "2025-10-09T09:30:00+09:00",
+      "exclude_reason": null
+    },
+    {
+      "claim_id": "CLM-002",
+      "customer_id": "C-90431",
+      "order_time": "2025-10-08T22:36:00+09:00",
+      "side": "매도",
+      "ticker": "AAPL",
+      "quantity": 10,
+      "unmet_price": 255.00,
+      "recovered_price": 250.00,
+      "currency": "USD",
+      "fx_rate": 1350,
+      "claim_received_at": "2025-10-09T14:00:00+09:00",
+      "exclude_reason": null
+    }
+  ],
+  "reporting": {
+    "fss_initial": { "status": "미생성" },
+    "customer_realtime": { "status": "제출완료", "submitted_at": "2025-10-08T22:55:00+09:00" },
+    "customer_recovery": { "status": "미생성" },
+    "compensation_notice": { "status": "미생성" },
+    "exec_brief": { "status": "미생성" },
+    "board_report": { "status": "미생성" }
+  }
+}

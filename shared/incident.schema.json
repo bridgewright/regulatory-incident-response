@@ -1,0 +1,294 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kpsec/incident.schema.json",
+  "title": "Korean electronic-finance incident data contract (incident.json)",
+  "description": "장애 대응 스킬(금감원 보고서·고객 공지·경영진/이사회 보고·개인정보 유출·타임라인)이 공유하는 단일 사실 원장. 한 번 입력한 사실이 모든 산출물에 일관되게 흐른다. 필드명은 전자금융감독규정 시행세칙 별지 제2호서식 항목에 맞춰 설계됨.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["incident_id", "detection", "timeline", "classification", "impact", "cause", "system_name", "description"],
+  "properties": {
+    "incident_id": {
+      "type": "string",
+      "description": "장애 식별자. 권장 형식 INC-YYYYMMDD-NN",
+      "examples": ["INC-20251008-01"]
+    },
+    "title": {
+      "type": "string",
+      "description": "장애 한 줄 제목",
+      "examples": ["해외주식(미국) 주문체결 지연 — 외부 브로커 연계 장애"]
+    },
+
+    "detection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["first_recognizer", "detected_at"],
+      "description": "별지 제2호서식: 최초 인지 / 사고인지일시",
+      "properties": {
+        "first_recognizer": {
+          "type": "string",
+          "enum": ["금융회사", "고객(민원인)", "기타"],
+          "description": "최초 인지 주체"
+        },
+        "detection_channel": {
+          "type": "string",
+          "description": "탐지 경로(자유서술): APM 알람 / 고객 민원 / CS 인입 등"
+        },
+        "detected_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "사고인지일시 (ISO 8601, 예: 2025-10-08T22:35:00+09:00)"
+        }
+      }
+    },
+
+    "timeline": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["occurred_at"],
+      "description": "별지 제2호서식: 사고발생일시 / 사고종료일시",
+      "properties": {
+        "occurred_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "사고발생일시"
+        },
+        "resolved_at": {
+          "type": ["string", "null"],
+          "format": "date-time",
+          "description": "사고종료일시 (복구 확인 전에는 null — '정상화' 공지·종결보고 잠금 트리거)"
+        },
+        "events": {
+          "type": "array",
+          "description": "대응 타임라인(포스트모템·중간보고용). 시각별 action",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["at", "action"],
+            "properties": {
+              "at": { "type": "string", "format": "date-time" },
+              "action": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+
+    "classification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["incident_category"],
+      "description": "별지 제2호서식: 사고유형",
+      "properties": {
+        "incident_category": {
+          "type": "string",
+          "enum": ["전산장애사고", "침해사고", "전자금융사기사고"],
+          "description": "사고유형 대분류"
+        },
+        "failure_subtype": {
+          "type": "string",
+          "enum": ["업무처리 프로그램 오류", "시스템 장애", "시설·설비 장애", "외부요인으로 인한 장애", "미정(파악 중)"],
+          "description": "전산장애사고일 때 세부유형. 외부 브로커(드라이브웰스) 연계 장애 = '외부요인으로 인한 장애'"
+        },
+        "failure_detail": {
+          "type": "string",
+          "description": "세부 설명(자유서술): 예 '로직 오류', '서버 장애', '클라우드 업체 장애'"
+        }
+      }
+    },
+
+    "impact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["disruption_minutes", "affected_users_count"],
+      "description": "보고 트리거 판정 + 별지 제2호서식: 사고 영향 이용자수 / 사고금액",
+      "properties": {
+        "affected_services": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "영향받은 서비스/기능",
+          "examples": [["해외주식 매수/매도 주문", "해외주식 체결", "잔고 조회"]]
+        },
+        "affected_markets": {
+          "type": "array",
+          "items": { "type": "string", "enum": ["국내주식", "해외주식", "국내ETF", "펀드", "CMA", "기타"] },
+          "description": "영향받은 시장/상품"
+        },
+        "single_branch_only": {
+          "type": "boolean",
+          "default": false,
+          "description": "1개 영업점에 국한된 장애 여부(보고 제외 사유 ②-1 판정용)"
+        },
+        "public_webserver_only": {
+          "type": "boolean",
+          "default": false,
+          "description": "단순 정보제공 공개 웹서버 등 금융서비스 무관 장애 여부(보고 제외 사유 ②-2)"
+        },
+        "disruption_minutes": {
+          "type": "number",
+          "minimum": 0,
+          "description": "전자금융업무 지연·중단 시간(분). 보고 트리거: 30분 이상 OR (10분 이상 & 이용자 1만명 이상)"
+        },
+        "affected_users_count": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "사고 영향 이용자수"
+        },
+        "incident_amount_krw": {
+          "type": ["number", "null"],
+          "description": "사고금액(원). 미상이면 null"
+        }
+      }
+    },
+
+    "cause": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["root_cause", "external_factor"],
+      "description": "별지 제2호서식: 사고원인 / 파급영향(외부요인·사고 원인 회사명)",
+      "properties": {
+        "root_cause": {
+          "type": "string",
+          "description": "사고원인(변경시점 및 사유 등). 미파악이면 '파악 중' 명시"
+        },
+        "external_factor": {
+          "type": "boolean",
+          "description": "외부요인 장애 여부(클라우드·통신·제휴업체·외부 브로커 등)"
+        },
+        "responsible_company": {
+          "type": ["string", "null"],
+          "description": "사고 원인 회사명(외부요인 시). 예: DriveWealth(미국 현지 브로커), Koscom",
+          "examples": ["DriveWealth"]
+        },
+        "affected_other_firms": {
+          "type": ["string", "null"],
+          "description": "파급영향: 영향받은 금융회사 등(동일 외부 장애로 함께 영향받은 타사)"
+        }
+      }
+    },
+
+    "security": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "침해사고일 때만 사용. 개인정보 영향 여부는 이사회 보고·별도 신고 트리거",
+      "properties": {
+        "personal_data_affected": {
+          "type": "boolean",
+          "default": false,
+          "description": "개인정보·신용정보 유출 동반 여부(별도 통지·신고 의무 트리거)"
+        },
+        "info_type": {
+          "type": "string",
+          "enum": ["개인정보", "신용정보", "둘 다", "해당없음"],
+          "description": "유출 정보 종류(신고 근거법 판단: 개인정보보호법 vs 신용정보법)"
+        },
+        "leaked_items": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "유출된 정보 항목(예: 성명, 휴대전화번호, 계좌번호, 거래내역)"
+        },
+        "leaked_count": {
+          "type": ["integer", "null"],
+          "description": "유출 정보주체 수(추정 포함)"
+        },
+        "attack_target": { "type": "string", "description": "공격 대상(내부망/DMZ/기타/미상)" },
+        "attack_method": { "type": "string", "description": "공격 방법(악성코드/DDoS/취약점 해킹 등)" },
+        "attack_damage": { "type": "string", "description": "공격 피해(서비스중단/정보유출/조작/금전손실 등)" }
+      }
+    },
+
+    "system_name": {
+      "type": "string",
+      "description": "별지 제2호서식: 사고발생 업무(시스템)명",
+      "examples": ["해외주식 주문체결 시스템(MTS-해외)"]
+    },
+    "description": {
+      "type": "string",
+      "description": "별지 제2호서식: 사고내용(현상 및 결과). 고객이 무엇을 겪었는지"
+    },
+    "handling": {
+      "type": "string",
+      "description": "별지 제2호서식: 처리결과(조치 내용)"
+    },
+    "measures": {
+      "type": "string",
+      "description": "별지 제2호서식: 대책(재발방지). 종결보고 필수"
+    },
+
+    "victims": {
+      "type": "array",
+      "description": "별지 제2호서식: 피해자 정보(있을 경우)",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "name": { "type": "string" },
+          "birth": { "type": "string", "description": "생년월일" },
+          "damage_amount_krw": { "type": "number" }
+        }
+      }
+    },
+    "compensation": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "별지 제2호서식: 배상금액 / 배상인원수 (종결보고 시 확정)",
+      "properties": {
+        "total_amount_krw": { "type": "number" },
+        "count": { "type": "integer" }
+      }
+    },
+
+    "orders": {
+      "type": "array",
+      "description": "보상 통지기한 추적·사내 정산 참고용 주문 데이터(접수일 기준 14영업일 통지기한 계산). 실제 배상액 산정은 사내 시스템 담당",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["order_time", "side", "ticker", "quantity"],
+        "properties": {
+          "claim_id": { "type": "string", "description": "보상신청 건 식별자" },
+          "customer_id": { "type": "string" },
+          "order_time": { "type": "string", "format": "date-time" },
+          "side": { "type": "string", "enum": ["매수", "매도"] },
+          "ticker": { "type": "string", "description": "종목" },
+          "quantity": { "type": "number" },
+          "unmet_price": { "type": "number", "description": "미체결 당시 주문가격" },
+          "recovered_price": { "type": "number", "description": "복구 후 실제 체결가격(매매기준)" },
+          "currency": { "type": "string", "default": "USD" },
+          "fx_rate": { "type": ["number", "null"], "description": "원화 환산 환율(1통화당 원). 해외주식 손해의 KRW 환산용. null이면 외화로만 산정" },
+          "claim_received_at": { "type": ["string", "null"], "format": "date-time", "description": "보상신청 접수일시. 14영업일 통지기한 기산점" },
+          "exclude_reason": { "type": ["string", "null"], "description": "보상 제외 사유(고객귀책·불가항력·시장 전체요인 등). 있으면 보상대상에서 제외" }
+        }
+      }
+    },
+
+    "reporting": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "대응 타임라인·체크리스트 스킬용 — 각 보고/산출물 상태 추적",
+      "properties": {
+        "fss_initial": { "$ref": "#/$defs/reportStatus", "description": "금감원 최초보고(≤24h)" },
+        "fss_interim": { "$ref": "#/$defs/reportStatus", "description": "금감원 중간보고" },
+        "fss_final": { "$ref": "#/$defs/reportStatus", "description": "금감원 종결보고" },
+        "kisa_report": { "$ref": "#/$defs/reportStatus", "description": "정보통신망법 제48조의3 침해사고 신고(KISA/과기정통부, ≤24h). 침해사고 시, 금감원 보고와 별개" },
+        "privacy_report": { "$ref": "#/$defs/reportStatus", "description": "개인정보보호법 유출 신고(≤72h). 개인정보 동반 시" },
+        "customer_realtime": { "$ref": "#/$defs/reportStatus", "description": "고객 실시간 공지" },
+        "customer_recovery": { "$ref": "#/$defs/reportStatus", "description": "고객 복구 공지" },
+        "compensation_notice": { "$ref": "#/$defs/reportStatus", "description": "보상 통지(14영업일)" },
+        "exec_brief": { "$ref": "#/$defs/reportStatus", "description": "경영진 속보" },
+        "board_report": { "$ref": "#/$defs/reportStatus", "description": "이사회 보고(중대 시)" }
+      }
+    }
+  },
+
+  "$defs": {
+    "reportStatus": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "status": { "type": "string", "enum": ["미생성", "초안", "제출완료", "해당없음"], "default": "미생성" },
+        "generated_at": { "type": ["string", "null"], "format": "date-time" },
+        "submitted_at": { "type": ["string", "null"], "format": "date-time" }
+      }
+    }
+  }
+}

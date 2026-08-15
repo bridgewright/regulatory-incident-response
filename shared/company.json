@@ -1,0 +1,35 @@
+{
+  "_comment": "Example operating configuration. Replace every public contact, corporate identity, holiday, and policy threshold with values approved by the institution before use.",
+  "company_name": "예시증권",
+  "legal_name": "예시증권 주식회사",
+  "representative_title": "대표이사",
+  "representative_name": "",
+  "regulator_recipient": "금융감독원장",
+  "customer_center_phone": "0000-0000",
+  "alt_order_channels": ["고객센터(0000-0000)", "비상 주문 채널"],
+  "compensation_info_url": "https://example.invalid/incident-compensation",
+  "compensation_claim_required_fields": ["주문시간", "주문종류", "종목", "수량", "가격"],
+  "compensation_notice_days_business": 14,
+  "alimtalk_char_target": 200,
+
+  "_comment_holidays": "Example Korean holiday calendar for business-day calculations. Verify and update before operational use.",
+  "business_holidays": [
+    "2025-01-01", "2025-01-28", "2025-01-29", "2025-01-30",
+    "2025-03-01", "2025-03-03", "2025-05-05", "2025-05-06",
+    "2025-06-06", "2025-08-15", "2025-10-03", "2025-10-06",
+    "2025-10-07", "2025-10-08", "2025-10-09", "2025-12-25",
+    "2026-01-01", "2026-02-16", "2026-02-17", "2026-02-18",
+    "2026-03-01", "2026-03-02", "2026-05-05", "2026-05-24",
+    "2026-05-25", "2026-06-06", "2026-08-15", "2026-08-17",
+    "2026-09-24", "2026-09-25", "2026-09-26", "2026-10-03",
+    "2026-10-05", "2026-10-09", "2026-12-25"
+  ],
+
+  "_comment_board": "Illustrative board-materiality thresholds. Replace with approved institutional policy.",
+  "board_severity_thresholds": {
+    "affected_users": 100000,
+    "disruption_minutes": 60,
+    "incident_amount_krw": 100000000,
+    "factors_required_for_board": 2
+  }
+}

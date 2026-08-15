@@ -1,0 +1,12 @@
+{
+  "name": "regulatory-incident-response",
+  "owner": { "name": "Taehyun Kim" },
+  "description": "A structured Korean electronic-finance incident response workflow.",
+  "plugins": [
+    {
+      "name": "regulatory-incident-response",
+      "source": "./",
+      "description": "A deterministic Korean electronic-finance incident response workflow."
+    }
+  ]
+}

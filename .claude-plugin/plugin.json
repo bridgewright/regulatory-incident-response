@@ -1,0 +1,9 @@
+{
+  "name": "regulatory-incident-response",
+  "version": "0.1.0",
+  "displayName": "Regulatory Incident Response",
+  "description": "Produces review-ready Korean electronic-finance incident reports, customer notices, governance briefs, privacy notices, and deadline tracking from one validated incident record.",
+  "author": { "name": "Taehyun Kim" },
+  "license": "MIT",
+  "keywords": ["incident-response", "financial-regulation", "compliance", "Korea", "FSS", "privacy"]
+}
